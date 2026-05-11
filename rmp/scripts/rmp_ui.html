@@ -1,0 +1,1459 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rate My Professor Chat</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1.1em;
+            margin-bottom: 20px;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        #searchInput {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        #searchInput:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .search-button {
+            padding: 12px 30px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+
+        .search-button:hover {
+            background: #764ba2;
+        }
+
+        .search-button:active {
+            transform: scale(0.98);
+        }
+
+        .chat-app {
+            background: white;
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 18px 40px rgba(0,0,0,0.12);
+            min-height: 60vh;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .chat-window {
+            background: #f4f6ff;
+            border: 1px solid #e3e7ff;
+            border-radius: 18px;
+            padding: 20px;
+            min-height: 50vh;
+            max-height: 60vh;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .chat-form {
+            display: grid;
+            gap: 12px;
+        }
+
+        #chatInput {
+            width: 100%;
+            min-height: 110px;
+            resize: vertical;
+            border: 1px solid #dcdcec;
+            border-radius: 16px;
+            padding: 16px;
+            font-size: 1em;
+            line-height: 1.5;
+            font-family: inherit;
+            background: #fff;
+            color: #111;
+        }
+
+        #chatInput:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102,126,234,0.12);
+        }
+
+        .chat-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .search-button.secondary {
+            background: #f3f4ff;
+            color: #333;
+        }
+
+        .chat-message {
+            display: flex;
+            width: 100%;
+        }
+
+        .chat-message.assistant {
+            justify-content: flex-start;
+        }
+
+        .chat-message.user {
+            justify-content: flex-end;
+        }
+
+        .chat-bubble {
+            max-width: 80%;
+            padding: 16px 18px;
+            border-radius: 20px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-break: break-word;
+            box-shadow: 0 10px 22px rgba(0,0,0,0.08);
+        }
+
+        .chat-bubble.assistant {
+            background: #ffffff;
+            border: 1px solid #e5e9ff;
+            color: #16213e;
+        }
+
+        .chat-bubble.user {
+            background: #667eea;
+            color: white;
+        }
+
+        .filters {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            padding: 15px;
+            background: #f5f5f5;
+            border-radius: 5px;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .filter-group label {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .filter-group input[type="checkbox"] {
+            cursor: pointer;
+            width: 18px;
+            height: 18px;
+        }
+
+        #status {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+            display: none;
+            font-weight: bold;
+        }
+
+        #status.loading {
+            display: block;
+            background: #e3f2fd;
+            color: #1976d2;
+            border-left: 4px solid #1976d2;
+        }
+
+        #status.success {
+            display: block;
+            background: #e8f5e9;
+            color: #388e3c;
+            border-left: 4px solid #388e3c;
+        }
+
+        #status.error {
+            display: block;
+            background: #ffebee;
+            color: #c62828;
+            border-left: 4px solid #c62828;
+        }
+
+        .menu-bar {
+            background: white;
+            border-radius: 10px;
+            padding: 12px 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+            border-top: 3px solid #667eea;
+        }
+
+        .menu-bar.hidden {
+            display: none;
+        }
+
+        .menu-bar-title {
+            font-weight: 600;
+            color: #667eea;
+            margin-right: 15px;
+            font-size: 0.95em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .menu-bar-separator {
+            width: 1px;
+            height: 24px;
+            background: #ddd;
+            margin: 0 5px;
+        }
+
+        .menu-item-btn {
+            padding: 8px 16px;
+            background: #f0f4ff;
+            color: #667eea;
+            border: 1px solid #d0d7ef;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.95em;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .menu-item-btn:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
+        }
+
+        .menu-item-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(102, 126, 234, 0.2);
+        }
+
+        .results-container {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #667eea;
+            padding-bottom: 15px;
+        }
+
+        .results-header-main {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .results-header h2 {
+            color: #667eea;
+            font-size: 1.8em;
+        }
+
+        .school-filter-inline {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .school-filter-inline label {
+            font-size: 0.9em;
+            font-weight: bold;
+            color: #667eea;
+            white-space: nowrap;
+        }
+
+        #schoolFilter {
+            border: 1px solid #d0d7ef;
+            border-radius: 6px;
+            padding: 6px 10px;
+            background: #f7f9ff;
+            color: #243b8a;
+            font-size: 0.9em;
+            min-width: 220px;
+        }
+
+        #schoolFilter:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+        }
+
+        .result-count {
+            background: #667eea;
+            color: white;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        .professor-list {
+            display: grid;
+            gap: 15px;
+        }
+
+        .professor-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .professor-card:hover {
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+            transform: translateY(-2px);
+            border-color: #667eea;
+        }
+
+        .professor-name {
+            font-size: 1.4em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .professor-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .info-label {
+            font-weight: bold;
+            color: #666;
+            font-size: 0.9em;
+            text-transform: uppercase;
+        }
+
+        .info-value {
+            font-size: 1.2em;
+            color: #333;
+        }
+
+        .rating-display {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stars {
+            color: #ffc107;
+            font-size: 1.4em;
+        }
+
+        .rating-number {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .difficulty-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .bar {
+            width: 100px;
+            height: 8px;
+            background: #ddd;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4caf50, #ffc107, #ff6b6b);
+            background-size: 300%;
+        }
+
+        .school-dept {
+            font-size: 0.95em;
+            color: #666;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #eee;
+        }
+
+        .professor-url {
+            margin-top: 15px;
+        }
+
+        .professor-url a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: bold;
+            transition: color 0.3s;
+        }
+
+        .professor-url a:hover {
+            color: #764ba2;
+            text-decoration: underline;
+        }
+
+        .papers-section {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 2px solid #f0f0f0;
+        }
+
+        .papers-title {
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .papers-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .paper-item {
+            background: #f9f9f9;
+            padding: 12px;
+            border-left: 3px solid #667eea;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+
+        .paper-item:hover {
+            background: #f0f0f0;
+            transform: translateX(2px);
+        }
+
+        .paper-title {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+            font-size: 0.95em;
+        }
+
+        .paper-meta {
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .paper-year {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-weight: bold;
+            font-size: 0.8em;
+            margin-right: 8px;
+        }
+
+        .paper-citations {
+            font-size: 0.8em;
+            color: #999;
+        }
+
+        .paper-link {
+            font-size: 0.85em;
+        }
+
+        .paper-link a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .paper-link a:hover {
+            color: #764ba2;
+            text-decoration: underline;
+        }
+
+        .no-papers {
+            font-size: 0.9em;
+            color: #999;
+            font-style: italic;
+            padding: 10px;
+            background: #f9f9f9;
+            border-left: 3px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .pagination button {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .pagination button:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .pagination button.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 20px;
+        }
+
+        .login-button {
+            border: 1px solid rgba(102, 126, 234, 0.3);
+            background: white;
+            color: #333;
+            border-radius: 999px;
+            padding: 10px 18px;
+            font-size: 0.95em;
+            cursor: pointer;
+            transition: background 0.2s, border-color 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .login-button:hover {
+            background: #f0f2ff;
+            border-color: #667eea;
+        }
+
+        .modal.hidden {
+            display: none;
+        }
+
+        .modal {
+            position: fixed;
+            inset: 0;
+            z-index: 1000;
+            display: grid;
+            place-items: center;
+            padding: 16px;
+        }
+
+        .modal-backdrop {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.45);
+        }
+
+        .modal-content {
+            position: relative;
+            background: white;
+            border-radius: 20px;
+            width: min(520px, 100%);
+            max-width: 520px;
+            padding: 24px;
+            box-shadow: 0 32px 80px rgba(0, 0, 0, 0.16);
+            z-index: 1;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            width: 34px;
+            height: 34px;
+            border: none;
+            background: #f3f4ff;
+            border-radius: 50%;
+            font-size: 1.4em;
+            line-height: 0.9;
+            cursor: pointer;
+            color: #333;
+        }
+
+        .modal-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .auth-tab {
+            flex: 1;
+            background: #f5f6ff;
+            border: 1px solid #e5e8ff;
+            border-radius: 999px;
+            padding: 10px 14px;
+            cursor: pointer;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .auth-tab.active {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .modal-body {
+            display: grid;
+            gap: 16px;
+        }
+
+        .input-group {
+            display: grid;
+            gap: 8px;
+        }
+
+        .input-group label {
+            font-size: 0.95em;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px 14px;
+            border-radius: 14px;
+            border: 1px solid #d6d9ff;
+            background: #f8f9ff;
+            font-size: 1em;
+            color: #111;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.14);
+        }
+
+        .auth-error {
+            color: #b82b2b;
+            background: #ffe4e4;
+            padding: 12px 14px;
+            border-radius: 12px;
+            display: none;
+            font-size: 0.95em;
+        }
+
+        .auth-error.visible {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .search-box {
+                flex-direction: column;
+            }
+
+            .professor-info {
+                grid-template-columns: 1fr;
+            }
+
+            header {
+                padding: 20px;
+            }
+
+            .results-container {
+                padding: 20px;
+            }
+
+            .results-header {
+                align-items: flex-start;
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            #schoolFilter {
+                min-width: 100%;
+            }
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .chart-container {
+            margin-top: 30px;
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+        }
+
+        .chart-title {
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #667eea;
+        }
+
+        .stat-box {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .stat {
+            background: white;
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            border-left: 4px solid #667eea;
+        }
+
+        .stat-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: #666;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header class="page-header">
+            <div>
+                <h1>🎓 Discover My Professor Chat</h1>
+                <p class="subtitle">Ask about a professor and get a concise info summary with ratings, department, and profile details.</p>
+            </div>
+            <button type="button" id="loginButton" class="login-button" aria-label="Open login menu">🔒 Sign in</button>
+        </header>
+
+        <div id="status"></div>
+
+        <div id="menuBar" class="menu-bar">
+            <span class="menu-bar-title">📋 Chat Menu</span>
+            <div class="menu-bar-separator"></div>
+            <button type="button" id="newChatBtn" class="menu-item-btn" title="Start a fresh conversation">
+                ➕ New Chat
+            </button>
+            <button type="button" id="deleteChatBtn" class="menu-item-btn" title="Clear all saved chat messages">
+                🗑️ Delete Chat
+            </button>
+            <button type="button" id="downloadChatBtn" class="menu-item-btn" title="Download chat as a text file">
+                ⬇️ Download
+            </button>
+        </div>
+
+        <div id="authModal" class="modal hidden">
+            <div class="modal-backdrop"></div>
+            <div class="modal-content">
+                <button type="button" id="closeAuthModal" class="close-modal">×</button>
+                <div class="modal-header">
+                    <div class="modal-tabs">
+                        <button type="button" class="auth-tab active" data-mode="login">Login</button>
+                        <button type="button" class="auth-tab" data-mode="signup">Sign up</button>
+                    </div>
+                </div>
+                <div class="modal-body">
+                    <div class="input-group">
+                        <label for="authEmail">Email</label>
+                        <input id="authEmail" type="email" placeholder="you@example.com" autocomplete="username" />
+                    </div>
+                    <div class="input-group">
+                        <label for="authPassword">Password</label>
+                        <input id="authPassword" type="password" placeholder="••••••••" autocomplete="current-password" />
+                    </div>
+                    <div class="input-group signup-only" style="display: none;">
+                        <label for="authUsername">Username</label>
+                        <input id="authUsername" type="text" placeholder="Your display name" autocomplete="name" />
+                    </div>
+                    <div id="authError" class="auth-error"></div>
+                    <button type="button" id="authSubmitBtn" class="search-button">Continue</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="chat-app">
+            <div class="filters">
+                <div class="filter-group school-filter-inline">
+                    <label for="schoolFilter">School filter</label>
+                    <input id="schoolFilter" type="text" placeholder="Optional school name to narrow results" autocomplete="off" />
+                </div>
+            </div>
+
+            <div id="chatWindow" class="chat-window"></div>
+
+            <form id="chatForm" class="chat-form">
+                <textarea
+                    id="chatInput"
+                    placeholder="Ask about a professor, e.g. 'Tell me about Dr. Jennifer Smith'"
+                    autocomplete="off"
+                ></textarea>
+                <div class="chat-actions">
+                    <button type="button" id="sendBtn" class="search-button">Send</button>
+                    <button type="button" id="clearBtn" class="search-button secondary">Clear</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const appState = {
+            loading: false,
+            conversation: [],
+            lastProfessor: null
+        };
+
+        const authState = {
+            token: null,
+            user: null,
+            mode: 'login'
+        };
+
+        function updateStatus(message, type = 'loading') {
+            const statusEl = document.getElementById('status');
+            statusEl.textContent = message;
+            statusEl.className = type;
+            statusEl.style.display = 'block';
+        }
+
+        function hideStatus() {
+            const statusEl = document.getElementById('status');
+            statusEl.style.display = 'none';
+        }
+
+        function appendMessage(role, content) {
+            const chatWindow = document.getElementById('chatWindow');
+            const messageEl = document.createElement('div');
+            messageEl.className = `chat-message ${role}`;
+
+            const bubble = document.createElement('div');
+            bubble.className = `chat-bubble ${role}`;
+            bubble.innerHTML = content.replace(/\n/g, '<br>');
+
+            messageEl.appendChild(bubble);
+            chatWindow.appendChild(messageEl);
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+
+            appState.conversation.push({
+                role,
+                content,
+                timestamp: new Date().toISOString()
+            });
+
+            if (authState.token && role === 'assistant') {
+                saveChatHistory();
+            }
+        }
+
+        function renderConversation(history) {
+            const chatWindow = document.getElementById('chatWindow');
+            chatWindow.innerHTML = '';
+            appState.conversation = history || [];
+            appState.lastProfessor = null;
+            if (!appState.conversation.length) {
+                const welcomeText = 'Welcome! Ask me about any professor and I will summarize their profile for you.';
+                const bubble = document.createElement('div');
+                bubble.className = 'chat-message assistant';
+                bubble.innerHTML = `<div class="chat-bubble assistant">${welcomeText.replace(/\n/g, '<br>')}</div>`;
+                chatWindow.appendChild(bubble);
+                return;
+            }
+
+            appState.conversation.forEach((item) => {
+                const messageEl = document.createElement('div');
+                messageEl.className = `chat-message ${item.role}`;
+                const bubble = document.createElement('div');
+                bubble.className = `chat-bubble ${item.role}`;
+                bubble.innerHTML = item.content.replace(/\n/g, '<br>');
+                messageEl.appendChild(bubble);
+                chatWindow.appendChild(messageEl);
+            });
+            chatWindow.scrollTop = chatWindow.scrollHeight;
+        }
+
+        function showAuthError(message) {
+            const authError = document.getElementById('authError');
+            authError.textContent = message;
+            authError.classList.add('visible');
+        }
+
+        function clearAuthError() {
+            const authError = document.getElementById('authError');
+            authError.textContent = '';
+            authError.classList.remove('visible');
+        }
+
+        function updateLoginButton() {
+            const loginButton = document.getElementById('loginButton');
+            loginButton.textContent = authState.user ? `👤 ${authState.user.username}` : '🔒 Sign in';
+        }
+
+        function openAuthModal(mode = 'login') {
+            authState.mode = mode;
+            document.querySelectorAll('.auth-tab').forEach((tab) => {
+                tab.classList.toggle('active', tab.getAttribute('data-mode') === mode);
+            });
+            document.querySelector('.signup-only').style.display = mode === 'signup' ? 'grid' : 'none';
+            document.getElementById('authSubmitBtn').textContent = mode === 'signup' ? 'Create account' : 'Login';
+            document.getElementById('authModal').classList.remove('hidden');
+            clearAuthError();
+        }
+
+        function closeAuthModal() {
+            document.getElementById('authModal').classList.add('hidden');
+            clearAuthError();
+        }
+
+        async function signupUser(email, password, username) {
+            const response = await fetch('http://localhost:3001/api/signup', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password, username })
+            });
+            return response.json();
+        }
+
+        async function loginUser(email, password) {
+            const response = await fetch('http://localhost:3001/api/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            return response.json();
+        }
+
+        async function fetchSession(token) {
+            const response = await fetch(`http://localhost:3001/api/session?token=${encodeURIComponent(token)}`);
+            return response.json();
+        }
+
+        async function loadChatHistory() {
+            if (!authState.token) return;
+            const response = await fetch(`http://localhost:3001/api/chat-history?token=${encodeURIComponent(authState.token)}`);
+            if (!response.ok) return;
+            const data = await response.json();
+            if (data.success && Array.isArray(data.history)) {
+                renderConversation(data.history);
+            }
+        }
+
+        async function saveChatHistory() {
+            if (!authState.token) return;
+            try {
+                await fetch('http://localhost:3001/api/save-chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token: authState.token, history: appState.conversation })
+                });
+            } catch (error) {
+                console.error('Failed to save chat history:', error);
+            }
+        }
+
+        async function initAuth() {
+            const token = localStorage.getItem('rmpChatSessionToken');
+            if (!token) {
+                updateLoginButton();
+                renderConversation([]);
+                return;
+            }
+
+            const data = await fetchSession(token);
+            if (data.success && data.user) {
+                authState.user = data.user;
+                authState.token = token;
+                updateLoginButton();
+                await loadChatHistory();
+                return;
+            }
+
+            localStorage.removeItem('rmpChatSessionToken');
+            updateLoginButton();
+            renderConversation([]);
+        }
+
+        async function handleAuthSubmit() {
+            const email = document.getElementById('authEmail').value.trim();
+            const password = document.getElementById('authPassword').value.trim();
+            const username = document.getElementById('authUsername').value.trim();
+
+            if (!email || !password || (authState.mode === 'signup' && !username)) {
+                showAuthError('Please fill in all required fields.');
+                return;
+            }
+
+            clearAuthError();
+            let result;
+
+            if (authState.mode === 'signup') {
+                result = await signupUser(email, password, username);
+            } else {
+                result = await loginUser(email, password);
+            }
+
+            if (result.success) {
+                authState.token = result.token;
+                authState.user = result.user;
+                localStorage.setItem('rmpChatSessionToken', result.token);
+                updateLoginButton();
+                closeAuthModal();
+                await loadChatHistory();
+                return;
+            }
+
+            showAuthError(result.error || 'Unable to sign in.');
+        }
+
+        function createProfessorSummary(prof) {
+            const stars = '⭐'.repeat(Math.round(prof.avgRating));
+            const difficulty = prof.avgDifficulty ? prof.avgDifficulty.toFixed(1) : 'N/A';
+            const takeAgain = prof.wouldTakeAgain ? prof.wouldTakeAgain.toFixed(1) + '%' : 'N/A';
+            const reviewText = prof.numRatings === 1 ? 'review' : 'reviews';
+
+            let summary = `Here is what I found for ${prof.name}:\n`;
+            summary += `• School: ${prof.school}\n`;
+            summary += `• Department: ${prof.department}\n`;
+            summary += `• Rating: ${prof.avgRating.toFixed(2)} / 5.0 (${stars})\n`;
+            summary += `• Difficulty: ${difficulty} / 5.0\n`;
+            summary += `• Would take again: ${takeAgain}\n`;
+            summary += `• Total ratings: ${prof.numRatings} ${reviewText}\n`;
+            summary += `• Profile: https://www.ratemyprofessors.com/professor/${prof.id}\n`;
+            summary += `\nNote: This information is taken from Rate My Professor search results. For publications or program affiliations, ask for a web-based profile search.\n`;
+
+            return summary;
+        }
+
+        function normalizeProfessorQuery(query) {
+            return query
+                .trim()
+                .toLowerCase()
+                .replace(/^(tell me about|who is|show me|give me info on|find|search for|about|information on)\s+/, '')
+                .replace(/^(professor|dr\.?|doctor|prof\.?)\s+/, '')
+                .replace(/[?.!]$/, '')
+                .trim();
+        }
+
+        function matchesProfessorName(query, prof) {
+            const normalizedQuery = normalizeProfessorQuery(query);
+            const normalizedName = prof.name.toLowerCase();
+            if (normalizedName === normalizedQuery) return true;
+            if (normalizedName.includes(normalizedQuery)) return true;
+            const queryTokens = normalizedQuery.split(/\s+/).filter(Boolean);
+            return queryTokens.every((token) => normalizedName.includes(token));
+        }
+
+        function selectBestProfessor(query, professors) {
+            const exactMatch = professors.find((prof) => matchesProfessorName(query, prof));
+            if (exactMatch) return exactMatch;
+            return [...professors].sort((a, b) => b.avgRating - a.avgRating)[0];
+        }
+
+        function wantsResearchDetails(query) {
+            return /\b(papers?|publications|research|programs?|affiliations?|affiliation|lab|group|profile|academic background|works|papers published|publications published)\b/i.test(query);
+        }
+
+        function queryContainsProfessorName(query, prof) {
+            const normalizedQuery = normalizeProfessorQuery(query);
+            const normalizedName = prof.name.toLowerCase();
+            if (normalizedName === normalizedQuery) return true;
+            if (normalizedName.includes(normalizedQuery)) return true;
+            const queryTokens = normalizedQuery.split(/\s+/).filter(Boolean);
+            return queryTokens.every((token) => normalizedName.includes(token));
+        }
+
+        async function fetchProfessorResearch(name) {
+            try {
+                const response = await fetch(`http://localhost:3001/api/search-research?name=${encodeURIComponent(name)}`);
+                if (!response.ok) {
+                    return null;
+                }
+                const data = await response.json();
+                return data.research || null;
+            } catch (error) {
+                console.error('Unable to fetch professor research:', error);
+                return null;
+            }
+        }
+
+        function buildResearchSummary(prof, research) {
+            if (!research) {
+                return `\n\nUnable to fetch additional papers or program affiliation details at this time for ${prof.name}.`;
+            }
+
+            const scholarResults = Array.isArray(research.scholar) ? research.scholar : [];
+            const geminiResults = Array.isArray(research.gemini) ? research.gemini : [];
+            const webResults = Array.isArray(research.web) ? research.web : [];
+
+            if (!scholarResults.length && !geminiResults.length && !webResults.length) {
+                return `\n\nNo verified publications found from Google Scholar for ${prof.name}.`;
+            }
+
+            let result = `\n\nResearch and publications info for ${prof.name}:\n`;
+            if (scholarResults.length) {
+                result += '\nVerified publications from Google Scholar:\n';
+                scholarResults.slice(0, 4).forEach((item) => {
+                    result += `• ${item.title}${item.url ? ` — ${item.url}` : ''}\n`;
+                });
+            } else {
+                result += '\nNo verified publications found from Google Scholar.\n';
+            }
+            if (geminiResults.length) {
+                result += '\nWeb search summary results:\n';
+                geminiResults.slice(0, 4).forEach((item) => {
+                    result += `• ${item.title}${item.url ? ` — ${item.url}` : ''}${item.summary ? `: ${item.summary}` : ''}\n`;
+                });
+            }
+            if (webResults.length) {
+                result += '\nAdditional web search hits:\n';
+                webResults.slice(0, 4).forEach((item) => {
+                    result += `• ${item.title}${item.url ? ` — ${item.url}` : ''}${item.snippet ? `: ${item.snippet}` : ''}\n`;
+                });
+            }
+            return result;
+        }
+
+        async function fetchProfessorSummary(query) {
+            try {
+                const normalizedQuery = normalizeProfessorQuery(query);
+                const researchIntent = wantsResearchDetails(query);
+
+                if (researchIntent && appState.lastProfessor && !queryContainsProfessorName(query, appState.lastProfessor)) {
+                    const summary = createProfessorSummary(appState.lastProfessor);
+                    const research = await fetchProfessorResearch(appState.lastProfessor.name);
+                    return summary + buildResearchSummary(appState.lastProfessor, research);
+                }
+
+                const professors = await fetchProfessors(normalizedQuery);
+                if (!professors.length) {
+                    if (appState.lastProfessor && researchIntent) {
+                        const summary = createProfessorSummary(appState.lastProfessor);
+                        const research = await fetchProfessorResearch(appState.lastProfessor.name);
+                        return summary + buildResearchSummary(appState.lastProfessor, research);
+                    }
+                    return `I could not find any professor matching "${query}". Try a name like \"Dr. Jennifer Smith\" or \"Professor Chen\".`;
+                }
+
+                let best;
+                if (researchIntent && appState.lastProfessor && !queryContainsProfessorName(query, appState.lastProfessor)) {
+                    best = appState.lastProfessor;
+                } else {
+                    best = selectBestProfessor(normalizedQuery, professors);
+                }
+
+                appState.lastProfessor = best;
+                let summary = createProfessorSummary(best);
+
+                if (wantsResearchDetails(query)) {
+                    const research = await fetchProfessorResearch(best.name);
+                    if (research) {
+                        const scholarResults = Array.isArray(research.scholar) ? research.scholar : [];
+                        const geminiResults = Array.isArray(research.gemini) ? research.gemini : [];
+                        if (scholarResults.length || geminiResults.length) {
+                            summary += '\n\nAdditional research and publications info:\n';
+                            if (scholarResults.length) {
+                                summary += '\nTop Google Scholar hits:\n';
+                                scholarResults.slice(0, 4).forEach((item, index) => {
+                                    summary += `• ${item.title}${item.url ? ` — ${item.url}` : ''}\n`;
+                                });
+                            }
+                            if (geminiResults.length) {
+                                summary += '\nWeb search summary results:\n';
+                                geminiResults.slice(0, 4).forEach((item, index) => {
+                                    summary += `• ${item.title}${item.url ? ` — ${item.url}` : ''}${item.summary ? `: ${item.summary}` : ''}\n`;
+                                });
+                            }
+                        } else {
+                            summary += '\n\nNo additional papers or affiliation details were found from web search.';
+                        }
+                    } else {
+                        summary += '\n\nUnable to fetch additional papers or program affiliation details at this time.';
+                    }
+                }
+
+                return summary;
+            } catch (error) {
+                console.error('Unable to fetch professor info:', error);
+                return `Sorry, I could not retrieve professor information right now. Please start the RMP backend by running \`cd Final_project/rmp && npm run api-server\`, then retry.`;
+            }
+        }
+
+        function getSchoolFilter() {
+            const schoolInput = document.getElementById('schoolFilter');
+            return schoolInput ? schoolInput.value.trim() : '';
+        }
+
+        async function fetchProfessors(query) {
+            const school = getSchoolFilter();
+            const params = new URLSearchParams({ name: query, max: '20' });
+            if (school) {
+                params.set('school', school);
+            }
+            const response = await fetch(`http://localhost:3001/api/search-professors?${params.toString()}`);
+            if (!response.ok) {
+                throw new Error('Local API server error');
+            }
+
+            const data = await response.json();
+            if (!data.results || !Array.isArray(data.results)) {
+                return [];
+            }
+
+            return data.results.map((prof, idx) => ({
+                id: prof.id || `prof-${idx}`,
+                name: prof.name || `${prof.firstName || ''} ${prof.lastName || ''}`.trim() || 'Unknown Professor',
+                school: prof.school || 'Unknown School',
+                department: prof.department || 'Unknown Department',
+                avgRating: Number(prof.avgRating) || 0,
+                numRatings: Number(prof.numRatings) || 0,
+                avgDifficulty: Number(prof.avgDifficulty) || 0,
+                wouldTakeAgain: Number(prof.wouldTakeAgain) || 0
+            }));
+        }
+
+        async function fetchProfessorPapers(professorName) {
+            // Rate My Professor does not expose publication data, so we do not fabricate papers here.
+            return [];
+        }
+
+        async function sendMessage() {
+            const inputEl = document.getElementById('chatInput');
+            const text = inputEl.value.trim();
+            if (!text || appState.loading) return;
+
+            appendMessage('user', text);
+            inputEl.value = '';
+            inputEl.focus();
+            appState.loading = true;
+            updateStatus('Thinking...', 'loading');
+
+            const reply = await fetchProfessorSummary(text);
+            appendMessage('assistant', reply);
+            hideStatus();
+            appState.loading = false;
+        }
+
+        function logout() {
+            authState.token = null;
+            authState.user = null;
+            localStorage.removeItem('rmpChatSessionToken');
+            updateLoginButton();
+            document.getElementById('chatWindow').innerHTML = '';
+            renderConversation([]);
+            closeAuthModal();
+        }
+
+        document.getElementById('sendBtn').addEventListener('click', sendMessage);
+        document.getElementById('loginButton').addEventListener('click', () => {
+            if (authState.user) {
+                const confirmed = confirm(`Sign out as ${authState.user.username}?`);
+                if (confirmed) logout();
+            } else {
+                openAuthModal('login');
+            }
+        });
+        document.getElementById('closeAuthModal').addEventListener('click', closeAuthModal);
+        document.getElementById('authSubmitBtn').addEventListener('click', handleAuthSubmit);
+        document.querySelectorAll('.auth-tab').forEach((tab) => {
+            tab.addEventListener('click', () => openAuthModal(tab.getAttribute('data-mode')));
+        });
+        document.getElementById('chatForm').addEventListener('submit', (event) => {
+            event.preventDefault();
+            sendMessage();
+        });
+        document.getElementById('clearBtn').addEventListener('click', () => {
+            document.getElementById('chatWindow').innerHTML = '';
+            document.getElementById('chatInput').value = '';
+            appState.lastProfessor = null;
+            hideStatus();
+        });
+
+        // Menu bar functionality
+        document.getElementById('newChatBtn').addEventListener('click', () => {
+            if (confirm('Start a new chat? This will clear the current conversation.')) {
+                appState.conversation = [];
+                appState.lastProfessor = null;
+                document.getElementById('chatWindow').innerHTML = '';
+                document.getElementById('chatInput').value = '';
+                hideStatus();
+                appendMessage('assistant', 'Welcome! Ask me about any professor and I will summarize their profile for you.');
+                if (authState.token) {
+                    saveChatHistory(); // Save empty chat
+                }
+            }
+        });
+
+        document.getElementById('deleteChatBtn').addEventListener('click', async () => {
+            if (!authState.token) {
+                alert('You must be logged in to delete chat history.');
+                return;
+            }
+            if (confirm('Delete all saved chat messages? This cannot be undone.')) {
+                try {
+                    await fetch('http://localhost:3001/api/save-chat', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ token: authState.token, history: [] })
+                    });
+                    appState.conversation = [];
+                    document.getElementById('chatWindow').innerHTML = '';
+                    document.getElementById('chatInput').value = '';
+                    hideStatus();
+                    appendMessage('assistant', 'Welcome! Ask me about any professor and I will summarize their profile for you.');
+                    alert('Chat history deleted successfully.');
+                } catch (error) {
+                    alert('Failed to delete chat history.');
+                }
+            }
+        });
+
+        document.getElementById('downloadChatBtn').addEventListener('click', () => {
+            const conversation = appState.conversation;
+            if (conversation.length === 0) {
+                alert('No chat messages to download.');
+                return;
+            }
+
+            const chatText = conversation.map(msg => {
+                const timestamp = new Date(msg.timestamp).toLocaleString();
+                return `[${timestamp}] ${msg.role.toUpperCase()}: ${msg.content}`;
+            }).join('\n\n');
+
+            const blob = new Blob([chatText], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `chat-log-${new Date().toISOString().split('T')[0]}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        });
+
+        document.getElementById('chatInput').addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' && !event.shiftKey) {
+                event.preventDefault();
+                sendMessage();
+            }
+        });
+
+        window.addEventListener('load', initAuth);
+
+        hideStatus();
+        appendMessage('assistant', 'Welcome! Ask me about any professor and I will summarize their profile for you.');
+    </script>
+    <script type="module" src="./rmp_ui_helpers.js"></script>
+</body>
+</html>
